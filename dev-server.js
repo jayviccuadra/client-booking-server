@@ -95,7 +95,7 @@ app.get('/verify-payment/:invoice_id', async (req, res) => {
     const response = await axios.get(`${XENDIT_API_URL}/invoices/${invoice_id}`, { headers });
     const invoice = response.data;
 
-    if (invoice.status === 'PAID') {
+    if (invoice.status === 'PAID' || invoice.status === 'SETTLED') {
        // Extract booking_id
        let booking_id = null;
        if (invoice.external_id && invoice.external_id.startsWith('booking_')) {
@@ -123,7 +123,7 @@ app.get('/verify-payment/:invoice_id', async (req, res) => {
 });
 
 // Webhook Handler (Xendit)
-app.post('/webhook', async (req, res) => {
+const handleWebhook = async (req, res) => {
   try {
     const event = req.body;
     
@@ -132,7 +132,7 @@ app.post('/webhook', async (req, res) => {
 
     console.log(`Received webhook: ${event.status} for invoice ${event.external_id}`);
 
-    if (event.status === 'PAID') {
+    if (event.status === 'PAID' || event.status === 'SETTLED') {
       // Structure depends on Xendit Invoice Callback
       // booking_id is in metadata?
       // Xendit might send metadata inside the payload directly or we parse external_id
@@ -184,7 +184,10 @@ app.post('/webhook', async (req, res) => {
     console.error('Webhook error:', error);
     res.sendStatus(500);
   }
-});
+};
+
+app.post('/webhook', handleWebhook);
+app.post('/api/xendit/webhook', handleWebhook); // Alias for compatibility
 
 const PORT = process.env.PORT || 4242;
 app.listen(PORT, () => {
