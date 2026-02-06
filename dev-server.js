@@ -188,6 +188,7 @@ const handleWebhook = async (req, res) => {
 
 app.post('/webhook', handleWebhook);
 app.post('/api/xendit/webhook', handleWebhook); // Alias for compatibility
+app.get('/api/xendit/webhook', (req, res) => res.status(200).send('Webhook endpoint is active')); // GET Health check
 
 const PORT = process.env.PORT || 4242;
 app.listen(PORT, () => {
