@@ -106,7 +106,7 @@ app.get('/verify-payment/:invoice_id', async (req, res) => {
           // Update Supabase
           const { error } = await supabase
             .from('bookings')
-            .update({ payment_status: 'Paid', status: 'Confirmed' })
+            .update({ payment_status: 'Paid' }) // Only update payment status, let admin confirm booking status
             .eq('id', booking_id);
           
           if (error) console.error('Supabase update error:', error);
@@ -162,8 +162,8 @@ const handleWebhook = async (req, res) => {
         const { data: updatedData, error } = await supabase
           .from('bookings')
           .update({ 
-            payment_status: 'Paid', 
-            status: 'Confirmed' 
+            payment_status: 'Paid'
+            // status: 'Confirmed' -- Removed: Admin must manually confirm
           })
           .eq('id', booking_id)
           .select();
